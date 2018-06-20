@@ -15,7 +15,7 @@ wsServer = new WebSocketServer({
 // WebSocket server
 wsServer.on('request', function(request) {
   const connection = request.accept(null, request.origin)
-
+  console.log('new connection')
   send('connected')
 
   // This is the most important callback for us, we'll handle

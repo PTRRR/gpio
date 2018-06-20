@@ -1,0 +1,98 @@
+{
+  "pannels": [
+    {
+      "label": "Laser",
+      "rows": [
+        {
+          "components": [
+            {
+              "name": "SwitchButton",
+              "pin": 10,
+              "label": "Power"
+            },
+            {
+              "name": "Range",
+              "pin": 10,
+              "label": "Intensity"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "name": "Range",
+              "pin": 10,
+              "label": "X Axis"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "name": "Range",
+              "pin": 10,
+              "label": "Y Axis"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Stepper",
+      "rows": [
+        {
+          "components": [
+            {
+              "name": "SwitchButton",
+              "pin": 10,
+              "label": "Stepper 1"
+            },
+            {
+              "name": "Range",
+              "pin": 10
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "name": "SwitchButton",
+              "pin": 10,
+              "label": "Stepper 2"
+            },
+            {
+              "name": "Range",
+              "pin": 10
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "name": "SwitchButton",
+              "pin": 10,
+              "label": "Stepper 3"
+            },
+            {
+              "name": "Range",
+              "pin": 10
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "name": "SwitchButton",
+              "pin": 10,
+              "label": "Stepper 4"
+            },
+            {
+              "name": "Range",
+              "pin": 10
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

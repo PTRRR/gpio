@@ -7,6 +7,10 @@ export default {
     pin: {
       type: Number,
       default: null
+    },
+    label: {
+      type: String,
+      default: null
     }
   },
   mounted () {

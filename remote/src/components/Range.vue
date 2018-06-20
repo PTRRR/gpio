@@ -1,13 +1,15 @@
 <template lang="pug">
-  .range
+  .input-container.range
     .slider(
       ref='slider'
-      @mousedown='active = true'
     )
       .cursor(
         ref='cursor'
         :style='{left: `${percent}%`}'
+        @mousedown='active = true'
+        @touchstart='active = true'
       )
+    h5.label(v-if='label') {{label}}
 </template>
 
 <script>
@@ -24,6 +26,7 @@ export default {
     }
   },
   mounted () {
+    // Mouse
     this.bus.$on('mousemove', e => {
       if (this.active) {
         this.updateCursor(e)
@@ -34,22 +37,30 @@ export default {
       this.active = false
     })
 
-    this.bus.$on('resize', e => {
+    // Touch
+    this.bus.$on('touchmove', e => {
+      if (this.active) {
+        this.updateCursor(e)
+      }
+    })
 
+    this.bus.$on('touchend', e => {
+      this.active = false
     })
   },
   methods: {
     updateCursor (e) {
       const { slider, cursor } = this.$refs
-      const { clientX } = e
+      const { clientX, touches } = e
+      const posX = clientX || touches[0].clientX
       const box = slider.getBoundingClientRect()
       const cursorBox = cursor.getBoundingClientRect()
       const { left, width } = box
       const cursorWidth = cursorBox.width
-      this.percent = ((clientX - left - cursorWidth * 0.5) / (width))
+      this.percent = ((posX - left - cursorWidth * 0.5) / (width))
       this.left = this.clamp(this.percent * width, 0, width - cursorWidth)
       this.percent = (this.left / (width)) * 100
-      const val = ((clientX - left - cursorWidth * 0.5) / (width - cursorWidth)) * 100
+      const val = ((posX - left - cursorWidth * 0.5) / (width - cursorWidth)) * 100
       this.emit(this.clamp(val, 0, 100))
     }
   }
@@ -58,13 +69,11 @@ export default {
 
 <style lang="sass">
 .range
-  flex: 1 1 auto
-  width: 50%
-  height: 100%
-  padding: 20px
+  width: 66.66%
+  flex-flow: column
   .slider
+    flex: 1 1 auto
     width: 100%
-    height: 100%
     position: relative
     border-radius: 10px
     background: rgb(210, 210, 210)
@@ -74,7 +83,7 @@ export default {
       position: absolute
       left: 0
       top: 0
-      width: 15%
+      width: 20%
       height: 100%
       background: white
       box-shadow: 0px 0px 10px 10px rgba(0, 0, 0, 0.1)
