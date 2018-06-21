@@ -1,6 +1,7 @@
 <template lang="pug">
   .input-container.switch-button(
-    @click='input'
+    ref='button'
+    @click='click'
   )
     .button
       .slider(:class='{on}')
@@ -14,6 +15,8 @@
 
 <script>
 import BaseActuatorMixin from '@/mixins/BaseActuatorMixin'
+import Hammer from 'hammerjs'
+
 export default {
   name: 'SwitchButton',
   mixins: [BaseActuatorMixin],
@@ -24,10 +27,30 @@ export default {
     }
   },
   methods: {
-    input () {
+    click () {
       this.on = !this.on
+      this.input()
+    },
+    input () {
       this.emit(this.on)
     }
+  },
+  mounted () {
+    const { button } = this.$refs
+    const buttonManager = new Hammer.Manager(button)
+    const Swipe = new Hammer.Swipe()
+    buttonManager.add(Swipe)
+
+    buttonManager.on('swipe', e => {
+      const { offsetDirection } = e
+      if (offsetDirection === 8) {
+        this.on = true
+        this.input()
+      } else if (offsetDirection === 16) {
+        this.on = false
+        this.input()
+      }
+    })
   }
 }
 </script>
@@ -44,24 +67,27 @@ export default {
     flex-flow: column
     position: relative
     border-radius: 10px
+    position: relative
     overflow: hidden
+    transform: translate3d(0, 0, 0)
     .slider
       position: absolute
       height: 200%
       width: 100%
+      will-change: transform
       transform: translate(0, -10%)
       transition: transform 0.15s ease-in-out
       &.on
-        transform: translate(0, -40%)
+        transform: translate(0, -40.5%)
       .section
         width: 100%
         height: 50%
         position: relative
         border-radius: 10px
         &.red
-          background: #ff435d
+          background: #FF2A43
         &.green
-          background: #70e970
+          background: #04FC3E
         h4
           margin: 0
           position: absolute

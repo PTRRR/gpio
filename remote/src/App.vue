@@ -16,7 +16,18 @@
             :label='component.label'
         )
     .console-pannel
-      .text-container
+      .text-container(
+        v-if='console'
+        ref='textContainer'
+      )
+        template(v-for='(log, index) in logs')
+          p(v-if='index === 0') Last Log ---------
+          p(
+            :class='log.type'
+            v-html='log.message'
+            v-if='index < 30'
+          )
+          p(v-if='index === 0') ------------------
 </template>
 
 <script>
@@ -43,11 +54,22 @@ export default {
   },
   data () {
     return {
+      isInput: false,
       socket: null,
       connected: false,
       interfaceTemplate,
       pannelIndex: 0,
-      console: false
+      console: false,
+      logs: []
+    }
+  },
+  watch: {
+    isInput () {
+      if (this.isInput) {
+        setTimeout(() => {
+          this.isInput = false
+        }, 100)
+      }
     }
   },
   computed: {
@@ -56,6 +78,27 @@ export default {
     },
     pannelsTranslationClass () {
       return `pannel-${this.pannelIndex}`
+    }
+  },
+  created () {
+    // Override console methods
+    const self = this
+    const log = console.log
+    const warn = console.warn
+    const error = console.error
+    console.log = function (logMessage) {
+      self.consoleLog(logMessage)
+      log.apply(console, arguments)
+    }
+
+    console.warn = function (warnMessage) {
+      self.consoleWarn(warnMessage)
+      warn.apply(console, arguments)
+    }
+
+    console.error = function (errorMessage) {
+      self.consoleError(errorMessage)
+      error.apply(console, arguments)
     }
   },
   mounted () {
@@ -83,7 +126,7 @@ export default {
         prevent: false
       },
       touchmove: {
-        prevent: true
+        prevent: false
       }
     }
 
@@ -102,11 +145,11 @@ export default {
 
     appManager.on('swipe', e => {
       const { offsetDirection } = e
-      if (offsetDirection === 2) this.pannelIndex += 1
-      else if (offsetDirection === 4) this.pannelIndex -= 1
+      if (offsetDirection === 2 && !this.isInput) this.pannelIndex += 1
+      else if (offsetDirection === 4 && !this.isInput) this.pannelIndex -= 1
 
-      if (offsetDirection === 8) this.console = true
-      else if (offsetDirection === 16) this.console = false
+      if (offsetDirection === 8 && !this.isInput) this.console = true
+      else if (offsetDirection === 16 && !this.isInput) this.console = false
       else this.console = false
 
       this.pannelIndex = this.clamp(
@@ -119,13 +162,13 @@ export default {
     // Initialize websocket connection
     if (window.WebSocket) {
       try {
-        this.socket = new WebSocket('ws://192.168.1.104:1337')
+        this.socket = new WebSocket('ws://10.192.233.251:1337')
         this.socket.onmessage = ({ data }) => {
           const msg = JSON.parse(data)
           const { type, message } = msg
           switch (type) {
             case 'connected':
-              console.log('*********** SERVER CONNECTION ***********')
+              console.log('WEBSOCKET CONNECTION -> OK')
               this.connected = true
               break
             default:
@@ -137,17 +180,42 @@ export default {
         alert('websocket')
       }
     } else {
-      console.log('This browser doesn\'t support websocket')
+      console.error('This browser doesn\'t support websocket')
     }
   },
   methods: {
     sendMessage (type, message) {
       if (this.socket && this.connected) {
         this.socket.send(JSON.stringify({type, message}))
+        this.consoleLog(message)
       }
     },
     onInput ({ type, message }) {
+      this.isInput = true
       this.sendMessage(type, message)
+    },
+    consoleLog (msg) {
+      this.logs.unshift({
+        type: 'log',
+        message: this.consoleWrite(msg)
+      })
+    },
+    consoleWarn (msg) {
+      this.logs.unshift({
+        type: 'warn',
+        message: this.consoleWrite(msg)
+      })
+    },
+    consoleError (msg) {
+      this.console = true
+      this.logs.unshift({
+        type: 'error',
+        message: this.consoleWrite(msg)
+      })
+    },
+    consoleWrite (msg) {
+      const date = new Date()
+      return `> ${JSON.stringify(msg)}`
     }
   }
 }
@@ -165,7 +233,7 @@ html, body
   font-family: Helvetica, Arial
 #app
   height: 100%
-  background: rgb(230, 230, 230)
+  background: #E8ECED
   &.console
     .console-pannel
       transform: translate(0, 0)
@@ -180,11 +248,27 @@ html, body
     will-change: transform
     transform: translate(0, 100%)
     transition: transform 0.3s ease-in-out;
-    padding: 22px 10px 10px 10px
+    padding: 22px 7px 7px 7px
     .text-container
       border-radius: 10px
-      border: solid 1px white
+      // border: solid 1px white
+      background: rgba(0, 0, 0, 0.2)
       height: 100%
+      font-size: 11px
+      padding: 5px
+      font-family: Courier
+      overflow: scroll
+      p
+        margin: 2px
+        display: inline-block
+        width: 100%
+        color: white
+      .log
+        color: white
+      .warn
+        color: orange
+      .error
+        color: red
   .pannels
     height: 100%
     white-space: nowrap
@@ -195,7 +279,7 @@ html, body
       &.pannel-#{$i}
         transform: translate(#{$i * -100%}, 0)
     .pannel
-      padding: 22px 10px 10px 10px
+      padding: 22px 2px 7px 2px
       flex: 0 0 auto
       white-space: initial
       display: flex

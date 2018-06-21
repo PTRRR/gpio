@@ -76,14 +76,15 @@ export default {
     width: 100%
     position: relative
     border-radius: 10px
-    background: rgb(210, 210, 210)
+    transform: translate3d(0, 0, 0)
+    background: #CFD4D6
     overflow: hidden
     cursor: pointer
     .cursor
       position: absolute
       left: 0
       top: 0
-      width: 20%
+      width: 15vw
       height: 100%
       background: white
       box-shadow: 0px 0px 10px 10px rgba(0, 0, 0, 0.1)
